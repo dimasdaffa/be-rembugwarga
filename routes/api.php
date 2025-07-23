@@ -5,18 +5,20 @@ use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\InvoiceController;
+use App\Http\Controllers\Api\NotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-
 Route::get('/announcements', [AnnouncementController::class, 'index']);
 
 // Rute Terproteksi (wajib login/punya token)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', fn(Request $request) => $request->user());
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+
 
     // === RUTE UNTUK WARGA ===
     Route::get('/invoices', [InvoiceController::class, 'index']);

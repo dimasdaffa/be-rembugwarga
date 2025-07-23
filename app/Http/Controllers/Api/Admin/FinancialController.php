@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\User;
+use App\Notifications\PaymentVerified;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -130,6 +131,10 @@ class FinancialController extends Controller
         }
 
         $invoice->update(['status' => 'paid']);
+
+          // --- KIRIM NOTIFIKASI KE USER YANG BERSANGKUTAN ---
+          $invoice->user->notify(new PaymentVerified($invoice));
+          // ---------------------------------------------------
 
         return response()->json(['message' => 'Pembayaran berhasil diverifikasi.', 'invoice' => $invoice]);
     }

@@ -36,5 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Rute untuk mengelola Pengeluaran (Expenses)
         Route::apiResource('expenses', FinancialController::class)->except(['show']);
+
+        Route::get('/financial-summary', [FinancialController::class, 'getFinancialSummary']);
     });
 });

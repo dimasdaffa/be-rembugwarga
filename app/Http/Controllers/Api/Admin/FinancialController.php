@@ -144,4 +144,49 @@ class FinancialController extends Controller
 
         return response()->json($invoices);
     }
+
+    /**
+     * Memberikan rekapitulasi keuangan untuk periode tertentu.
+     */
+    public function getFinancialSummary(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'year' => 'required|numeric|digits:4',
+            'month' => 'required|numeric|between:1,12',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $year = $request->year;
+        $month = $request->month;
+
+        // 1. Hitung Total Pemasukan
+        // Diambil dari invoice yang statusnya 'paid' pada periode yang diminta
+        $totalIncome = Invoice::where('status', 'paid')
+            ->whereYear('updated_at', $year) // Asumsi 'updated_at' adalah tanggal verifikasi
+            ->whereMonth('updated_at', $month)
+            ->sum('amount');
+
+        // 2. Hitung Total Pengeluaran
+        $totalExpense = Expense::whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->sum('amount');
+
+        // 3. Hitung Saldo
+        $balance = $totalIncome - $totalExpense;
+
+        return response()->json([
+            'period' => [
+                'year' => $year,
+                'month' => $month,
+            ],
+            'summary' => [
+                'total_income' => (float) $totalIncome,
+                'total_expense' => (float) $totalExpense,
+                'balance' => $balance,
+            ]
+        ]);
+    }
 }

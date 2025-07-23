@@ -119,13 +119,29 @@ class FinancialController extends Controller
         return response()->json(['message' => 'Berhasil membuat ' . $warga->count() . ' tagihan untuk periode ' . $period->format('F Y')], 201);
     }
 
+    /**
+     * Memverifikasi pembayaran dan mengubah status invoice menjadi 'paid'.
+     */
     public function verifyPayment(Invoice $invoice)
     {
-        // Logika untuk verifikasi pembayaran akan kita tambahkan di sini nanti
+        // Cek apakah statusnya memang sedang menunggu verifikasi
+        if ($invoice->status !== 'waiting_verification') {
+            return response()->json(['message' => 'Tagihan ini tidak dalam status menunggu verifikasi.'], 409); // 409 Conflict
+        }
+
+        $invoice->update(['status' => 'paid']);
+
+        return response()->json(['message' => 'Pembayaran berhasil diverifikasi.', 'invoice' => $invoice]);
     }
 
+    /**
+     * Menampilkan semua tagihan dari semua warga untuk dilihat admin.
+     */
     public function getAllInvoices()
     {
-        // Logika untuk admin melihat semua tagihan akan kita tambahkan di sini nanti
+        // Mengambil semua invoice, beserta data user-nya, diurutkan dari yang terbaru
+        $invoices = Invoice::with('user')->latest()->paginate(20);
+
+        return response()->json($invoices);
     }
 }

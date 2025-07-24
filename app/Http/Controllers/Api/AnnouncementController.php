@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\AnnouncementCreated;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AnnouncementResource;
 use App\Models\Announcement;
@@ -35,6 +36,9 @@ class AnnouncementController extends Controller
         }
 
         $announcement = $request->user()->announcements()->create($validator->validated());
+
+         // --- PICU EVENT SETELAH PENGUMUMAN DIBUAT ---
+         AnnouncementCreated::dispatch($announcement);
 
         return new AnnouncementResource($announcement);
     }

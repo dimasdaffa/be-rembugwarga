@@ -141,11 +141,18 @@ class FinancialController extends Controller
 
     /**
      * Menampilkan semua tagihan dari semua warga untuk dilihat admin.
+     * Bisa difilter berdasarkan status.
      */
-    public function getAllInvoices()
+    public function getAllInvoices(Request $request)
     {
-        // Mengambil semua invoice, beserta data user-nya, diurutkan dari yang terbaru
-        $invoices = Invoice::with('user')->latest()->paginate(20);
+        $query = Invoice::with('user')->latest();
+
+        // Tambahkan filter berdasarkan status jika ada
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $invoices = $query->paginate(20);
 
         return response()->json($invoices);
     }

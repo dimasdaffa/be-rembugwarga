@@ -95,6 +95,7 @@ class FinancialController extends Controller
 
         $period = Carbon::parse($request->period)->startOfMonth();
         $amount = $request->amount;
+        $dueDate = $period->copy()->day(10); // Menetapkan jatuh tempo tanggal 10
 
         // 1. Cek apakah tagihan untuk periode ini sudah pernah dibuat
         $existingInvoice = Invoice::where('period', $period)->first();
@@ -107,12 +108,13 @@ class FinancialController extends Controller
 
         // 3. Gunakan Database Transaction
         // Jika ada satu saja yang gagal, semua data akan dibatalkan (rollback)
-        DB::transaction(function () use ($warga, $period, $amount) {
+        DB::transaction(function () use ($warga, $period, $amount, $dueDate) {
             foreach ($warga as $user) {
                 $invoice=Invoice::create([
                     'user_id' => $user->id,
                     'amount' => $amount,
                     'period' => $period,
+                    'due_date' => $dueDate, 
                     'status' => 'pending', // Status awal tagihan
                 ]);
                 InvoiceGenerated::dispatch($invoice);

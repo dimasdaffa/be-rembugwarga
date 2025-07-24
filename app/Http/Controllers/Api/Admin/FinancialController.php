@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Events\InvoiceGenerated;
 use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use App\Models\Invoice;
@@ -108,12 +109,13 @@ class FinancialController extends Controller
         // Jika ada satu saja yang gagal, semua data akan dibatalkan (rollback)
         DB::transaction(function () use ($warga, $period, $amount) {
             foreach ($warga as $user) {
-                Invoice::create([
+                $invoice=Invoice::create([
                     'user_id' => $user->id,
                     'amount' => $amount,
                     'period' => $period,
                     'status' => 'pending', // Status awal tagihan
                 ]);
+                InvoiceGenerated::dispatch($invoice);
             }
         });
 
